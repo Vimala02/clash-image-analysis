@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Image Analysis</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #f9f9f9; /* Light background */
+            --header-color: #212529; /* Header text color */
+            --button-background: #000000; /* Black button background */
+            --button-text-color: #ffffff; /* White button text */
+            --input-background: #ffffff; /* White input background */
+            --input-border-color: #ced4da; /* Light border for inputs */
+            --text-color: #212529; /* Standard text color */
+            --progress-color: #007bff; /* Progress bar color */
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .header-bar {
+            text-align: center;
+            padding: 20px 10px;
+            background-color: var(--background-color);
+            border-bottom: 2px solid var(--progress-color);
+            margin-bottom: 20px;
+        }
+
+        .header-bar h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--header-color);
+        }
+
+        .form-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--button-background);
+            border-color: var(--button-background);
+            color: var(--button-text-color);
+            font-weight: 500;
+            padding: 12px;
+        }
+
+        .btn-primary:hover {
+            background-color: #333333;
+        }
+
+        .form-control {
+            border: 1px solid var(--input-border-color);
+            border-radius: 8px;
+            background-color: var(--input-background);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            border-color: var(--progress-color);
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .progress-bar-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            background-color: var(--progress-color);
+            height: 20px;
+            border-radius: 10px;
+        }
+
+        .image-description {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .image-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-bar">
+            <h1>Clash Image Analysis</h1>
+        </div>
+
+        <!-- Form -->
+        <div class="form-container">
+            <form id="uploadForm" action="/" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="images" class="form-label">Upload Images:</label>
+                    <input type="file" class="form-control" id="images" name="images" multiple required>
+                </div>
+                <div class="mb-3">
+                    <label for="model_path" class="form-label">Model Path:</label>
+                    <input type="text" class="form-control" id="model_path" name="model_path" 
+                           value="C:/Users/Naresh/Documents/GitHub/Clash-Detection-in-Architecture-Models/best.pt" required>
+                </div>
+                <div class="mb-3">
+                    <label for="class_file_path" class="form-label">Class Names File:</label>
+                    <input type="text" class="form-control" id="class_file_path" name="class_file_path" 
+                           value="C:/Users/Naresh/Documents/GitHub/Clash-Detection-in-Architecture-Models/coco1.txt" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confidence_threshold" class="form-label">Confidence Threshold:</label>
+                    <input type="range" class="form-range" id="confidence_threshold" name="confidence_threshold" min="0.1" max="1.0" step="0.01" value="0.5">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block w-100" id="submitButton">Run Detection</button>
+            </form>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-container" id="progressBarContainer">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 0%;">
+                        Processing...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processed Images Section -->
+        {% if processed_images %}
+        <h3 class="mt-5">Processed Images:</h3>
+        <div class="row">
+            {% for image_path in processed_images %}
+            <div class="col-md-4 mb-4">
+                <div class="image-card">
+                    <img src="{{ image_path }}" class="img-fluid" alt="Processed Image">
+                    <div class="image-description">Processed Image</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- PDF Download Section -->
+        {% if pdf_path %}
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('download_pdf', pdf_path=pdf_path) }}" class="btn btn-primary btn-lg" download="yolo_detection_results.pdf">
+                <i class="fas fa-file-pdf"></i> Download Detection Results as PDF
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById("uploadForm");
+        const progressBarContainer = document.getElementById("progressBarContainer");
+        const progressBar = document.getElementById("progressBar");
+        const submitButton = document.getElementById("submitButton");
+
+        form.addEventListener("submit", function (event) {
+            progressBarContainer.style.display = "block";
+            submitButton.disabled = true;
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressBar.textContent = "Completed!";
+                } else {
+                    progress += 10;
+                    progressBar.style.width = progress + "%";
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>
