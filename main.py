@@ -1,4 +1,4 @@
-pip install --upgrade torchfrom waitress import serve
+from waitress import serve
 from deploy import app
 import multiprocessing
 
