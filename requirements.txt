@@ -6,3 +6,5 @@ numpy
 pandas
 opencv-python
 ultralytics
+fpdf == 1.7.2
+waitress
