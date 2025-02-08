@@ -1,0 +1,21 @@
+# Use the Python base image
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    dbus \
+    cmake \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the application code
+COPY . /app
+
+# Set the working directory
+WORKDIR /app
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the application
+CMD ["gunicorn", "-b", ":$PORT", "main:app"]
